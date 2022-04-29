@@ -1,6 +1,6 @@
-package com.thitari.recipedb.data.network.recipe.service
+package com.thitari.recipedb.data.api.recipe
 
-import com.thitari.recipedb.data.network.recipe.response.RecipeResponse
+import com.thitari.recipedb.data.api.recipe.response.RecipeResponse
 import retrofit2.Response
 import retrofit2.http.GET
 

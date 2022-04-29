@@ -1,4 +1,4 @@
-package com.thitari.recipedb.data.network.recipe.response
+package com.thitari.recipedb.data.api.recipe.response
 
 import com.google.gson.annotations.SerializedName
 

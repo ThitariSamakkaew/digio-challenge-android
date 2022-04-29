@@ -1,4 +1,4 @@
-package com.thitari.recipedb.data.network.recipe.service
+package com.thitari.recipedb.data.api.recipe
 
 import com.thitari.recipedb.data.model.RecipeListResult
 

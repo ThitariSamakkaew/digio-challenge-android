@@ -1,7 +1,7 @@
-package com.thitari.recipedb.data.network.recipe.mapper
+package com.thitari.recipedb.data.api.recipe.mapper
 
 import com.thitari.recipedb.data.model.Recipe
-import com.thitari.recipedb.data.network.recipe.response.RecipeResponse
+import com.thitari.recipedb.data.api.recipe.response.RecipeResponse
 import javax.inject.Inject
 
 interface RecipeResponseToRecipeMapper {

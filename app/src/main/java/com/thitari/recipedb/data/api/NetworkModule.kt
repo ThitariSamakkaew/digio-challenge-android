@@ -1,8 +1,8 @@
-package com.thitari.recipedb.data.network.recipe.mapper
+package com.thitari.recipedb.data.api.recipe.mapper
 
-import com.thitari.recipedb.data.network.recipe.service.RecipeApi
-import com.thitari.recipedb.data.network.recipe.service.RecipeApiImpl
-import com.thitari.recipedb.data.network.recipe.service.RecipeService
+import com.thitari.recipedb.data.api.recipe.RecipeApi
+import com.thitari.recipedb.data.api.recipe.RecipeApiImpl
+import com.thitari.recipedb.data.api.recipe.RecipeService
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

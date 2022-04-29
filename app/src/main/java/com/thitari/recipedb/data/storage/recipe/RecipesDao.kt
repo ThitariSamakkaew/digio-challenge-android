@@ -3,10 +3,7 @@ package com.thitari.recipedb.data.storage.recipe
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import com.thitari.recipedb.data.model.Recipe
-import com.thitari.recipedb.data.model.RecipeListResult
 import com.thitari.recipedb.data.storage.recipe.entities.RecipeEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface RecipesDao {
