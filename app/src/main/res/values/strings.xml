@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">RecipesDB</string>
+    <string name="recipe_nutrition_fat">Fat:</string>
+    <string name="recipe_nutrition_carbos">Carbos:</string>
+    <string name="recipe_nutrition_proteins">Proteins:</string>
+    <string name="recipe_nutrition_time">Time:</string>
+    <string name="recipe_nutrition_difficulty">Difficulty:</string>
+    <string name="recipe_nutrition_calories">Calories:</string>
 </resources>
