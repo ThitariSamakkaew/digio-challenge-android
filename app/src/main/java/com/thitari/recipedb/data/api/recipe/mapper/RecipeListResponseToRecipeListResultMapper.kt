@@ -2,6 +2,7 @@ package com.thitari.recipedb.data.api.recipe.mapper
 
 import com.thitari.recipedb.data.model.RecipeListResult
 import com.thitari.recipedb.data.api.recipe.response.RecipeResponse
+import com.thitari.recipedb.data.model.Recipe
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -15,7 +16,7 @@ internal class RecipeListResponseToRecipeListResultMapperImpl @Inject constructo
 
     override fun map(response: Response<List<RecipeResponse>>): RecipeListResult {
         return if (response.isSuccessful) {
-            val recipes = response.body()
+            val recipes: List<Recipe> = response.body()
                 ?.map { recipeResponse -> recipeResponseToRecipeMapper.map(recipeResponse) }
                 ?: emptyList()
             RecipeListResult.Success(recipes)

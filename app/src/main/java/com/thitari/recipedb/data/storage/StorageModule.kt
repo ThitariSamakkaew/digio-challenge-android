@@ -9,6 +9,9 @@ import com.thitari.recipedb.data.storage.recipe.mapper.RecipeEntityListToRecipeL
 import com.thitari.recipedb.data.storage.recipe.mapper.RecipeEntityListToRecipeListResultMapper
 import com.thitari.recipedb.data.storage.recipe.mapper.RecipeEntityToRecipeMapper
 import com.thitari.recipedb.data.storage.recipe.mapper.RecipeEntityToRecipeMapperImpl
+import com.thitari.recipedb.data.storage.recipe.mapper.RecipeToFavoriteRecipeEntityMapper
+import com.thitari.recipedb.data.storage.recipe.mapper.RecipeToFavoriteRecipeEntityMapperImpl
+import com.thitari.recipedb.data.storage.recipe.mapper.RecipeToRecipeEntityMapper
 import com.thitari.recipedb.data.storage.recipe.mapper.RecipeToRecipeEntityMapperImpl
 import dagger.Binds
 import dagger.Module
@@ -20,7 +23,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-internal abstract class DatabaseModule {
+internal abstract class StorageModule {
 
     @Singleton
     @Binds
@@ -38,26 +41,36 @@ internal abstract class DatabaseModule {
     @Binds
     abstract fun bindRecipeToRecipeEntityMapper(
         impl: RecipeToRecipeEntityMapperImpl
-    ): RecipeToRecipeEntityMapperImpl
+    ): RecipeToRecipeEntityMapper
 
     @Singleton
     @Binds
-    abstract fun bindRecipeStorage(impl: RecipeStorageImpl): RecipeStorage
+    abstract fun bindRecipeToFavoriteEntityMapper(
+        impl: RecipeToFavoriteRecipeEntityMapperImpl
+    ): RecipeToFavoriteRecipeEntityMapper
+
+    @Singleton
+    @Binds
+    abstract fun bindRecipeStorage(
+        impl: RecipeStorageImpl
+    ): RecipeStorage
 
     companion object {
 
         @Singleton
         @Provides
-        fun provideRecipesDao(database: RecipesDatabase) = database.recipesDao()
+        fun provideRecipesDao(
+            database: RecipesDatabase,
+        ) = database.recipesDao()
 
         @Singleton
         @Provides
-        fun provideRecipesDatabase(@ApplicationContext context: Context): RecipesDatabase =
-            Room.databaseBuilder(
-                context,
-                RecipesDatabase::class.java,
-                RecipesDatabase.NAME
-            ).build()
+        fun provideRecipesDatabase(
+            @ApplicationContext context: Context,
+        ): RecipesDatabase = Room.databaseBuilder(
+            context,
+            RecipesDatabase::class.java,
+            RecipesDatabase.NAME
+        ).build()
     }
 }
-

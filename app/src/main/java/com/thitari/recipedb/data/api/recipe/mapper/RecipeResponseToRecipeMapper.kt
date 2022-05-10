@@ -8,7 +8,8 @@ interface RecipeResponseToRecipeMapper {
     fun map(response: RecipeResponse): Recipe
 }
 
-internal class RecipeMapperToRecipeImpl @Inject constructor() : RecipeResponseToRecipeMapper {
+internal class RecipeResponseToRecipeMapperImpl @Inject constructor()
+    : RecipeResponseToRecipeMapper {
 
     override fun map(response: RecipeResponse): Recipe {
 

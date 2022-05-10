@@ -1,7 +1,7 @@
 package com.thitari.recipedb.data.api.recipe
 
-import com.thitari.recipedb.data.model.RecipeListResult
 import com.thitari.recipedb.data.api.recipe.mapper.RecipeListResponseToRecipeListResultMapper
+import com.thitari.recipedb.data.model.RecipeListResult
 import javax.inject.Inject
 
 internal class RecipeApiImpl @Inject constructor(
@@ -9,9 +9,15 @@ internal class RecipeApiImpl @Inject constructor(
     private val recipeListResponseToRecipeListResultMapper: RecipeListResponseToRecipeListResultMapper
 ) : RecipeApi {
 
-    override suspend fun getRecipeList(): RecipeListResult {
-        val response = recipeService.getRecipeList()
-        return recipeListResponseToRecipeListResultMapper.map(response)
+    override suspend fun getRecipeList(
+
+    ): RecipeListResult {
+        return try {
+            val response = recipeService.getRecipeList()
+            recipeListResponseToRecipeListResultMapper.map(response)
+        } catch (e: Exception) {
+            RecipeListResult.Error
+        }
     }
 
     companion object {

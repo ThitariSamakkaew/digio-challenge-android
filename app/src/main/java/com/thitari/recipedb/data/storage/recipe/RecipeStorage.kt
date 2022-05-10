@@ -5,6 +5,9 @@ import com.thitari.recipedb.data.model.RecipeListResult
 
 interface RecipeStorage {
 
-    fun getRecipeList(): RecipeListResult
-    fun insertRecipes(recipes: List<Recipe>)
+    suspend fun getRecipeList(): RecipeListResult
+    suspend fun insertRecipes(recipes: List<Recipe>)
+    suspend fun addRecipesToFavorite(recipe: Recipe)
+    suspend fun deleteRecipeFromFavorite(recipe: Recipe)
+    suspend fun getFavoriteRecipeIds(): List<String>
 }
