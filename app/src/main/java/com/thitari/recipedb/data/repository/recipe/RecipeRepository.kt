@@ -2,15 +2,16 @@ package com.thitari.recipedb.data.repository.recipe
 
 import com.thitari.recipedb.data.api.recipe.RecipeApi
 import com.thitari.recipedb.data.model.Recipe
-import com.thitari.recipedb.data.model.RecipeListResult
 import com.thitari.recipedb.data.storage.recipe.RecipeStorage
 import javax.inject.Inject
 
 interface RecipeRepository {
-    suspend fun getRecipes(): RecipeListResult
+    suspend fun getRecipes(): List<Recipe>
+    suspend fun refreshRecipes(): List<Recipe>
     suspend fun addRecipeToFavorite(recipe: Recipe)
     suspend fun removeRecipeFromFavorite(recipe: Recipe)
     suspend fun getFavoriteRecipeIds(): List<String>
+    suspend fun getOrRefreshRecipesByTime(time: Long): List<Recipe>
 }
 
 internal class RecipeRepositoryImpl @Inject constructor(
@@ -18,18 +19,30 @@ internal class RecipeRepositoryImpl @Inject constructor(
     private val recipeStorage: RecipeStorage,
 ) : RecipeRepository {
 
-    override suspend fun getRecipes(): RecipeListResult {
-        var result = recipeStorage.getRecipeList()
-        if (result is RecipeListResult.Error ||
-            result is RecipeListResult.Success && result.recipes.isEmpty()
-        ) {
-
-            result = recipeApi.getRecipeList()
-            if (result is RecipeListResult.Success) {
-                recipeStorage.insertRecipes(result.recipes)
-            }
+    override suspend fun getOrRefreshRecipesByTime(time: Long): List<Recipe> {
+        val timestamp = recipeStorage.getRecipeTimestamp()
+        val timeSpent = System.currentTimeMillis() - timestamp
+        return if (timeSpent > time) {
+            refreshRecipes()
+        } else {
+            getRecipes()
         }
-        return result
+    }
+
+    override suspend fun getRecipes(): List<Recipe> {
+        var recipes = recipeStorage.getRecipes()
+        if (recipes.isEmpty()) {
+            recipes = refreshRecipes()
+        }
+        return recipes
+    }
+
+    override suspend fun refreshRecipes(): List<Recipe> {
+        val recipesResult = recipeApi.getRecipes()
+        if (recipesResult.isNotEmpty()) {
+            recipeStorage.insertRecipes(recipes = recipesResult)
+        }
+        return recipesResult
     }
 
     override suspend fun addRecipeToFavorite(recipe: Recipe) {

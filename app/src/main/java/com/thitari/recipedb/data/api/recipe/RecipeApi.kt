@@ -1,8 +1,8 @@
 package com.thitari.recipedb.data.api.recipe
 
-import com.thitari.recipedb.data.model.RecipeListResult
+import com.thitari.recipedb.data.model.Recipe
 
 interface RecipeApi {
 
-    suspend fun getRecipeList(): RecipeListResult
+    suspend fun getRecipes(): List<Recipe>
 }

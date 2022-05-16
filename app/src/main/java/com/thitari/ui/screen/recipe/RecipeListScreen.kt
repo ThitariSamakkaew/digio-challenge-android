@@ -27,6 +27,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -44,6 +47,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.thitari.recipedb.data.model.Recipe
@@ -52,11 +58,29 @@ import com.thitari.recipesdb.R
 @Composable
 fun RecipeListScreen(
     viewModel: RecipeListViewModel = hiltViewModel(),
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
 ) {
-    val state = viewModel.state
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_START) {
+                viewModel.onStart()
+            } else if (event == Lifecycle.Event.ON_STOP) {
+                viewModel.onStop()
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    val state by viewModel.state.collectAsState()
     when {
         state.isLoading -> RecipeListLoading()
-        state.error -> RecipeListError()
+        state.error -> RecipeListError(
+            onTryAgainClick = viewModel.onTryAgainClick
+        )
         else -> RecipeListContent(
             recipes = state.recipes,
             onAddToFavorite = viewModel.onAddToFavorite,
@@ -91,7 +115,9 @@ fun RecipeListLoading() {
 }
 
 @Composable
-fun RecipeListError() {
+fun RecipeListError(
+    onTryAgainClick: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -113,9 +139,8 @@ fun RecipeListError() {
         )
 
         Button(
-            onClick = {
-
-            }, colors = ButtonDefaults.buttonColors(
+            onClick = onTryAgainClick,
+            colors = ButtonDefaults.buttonColors(
                 backgroundColor = Color.Blue,
                 contentColor = Color.White
             )
@@ -297,7 +322,7 @@ fun FavoriteButton(
 @Preview
 @Composable
 fun RecipeListErrorPreview() {
-    RecipeListError()
+    RecipeListError(onTryAgainClick = {})
 }
 
 @Preview

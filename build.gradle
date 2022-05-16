@@ -6,7 +6,7 @@ buildscript {
         targetSdkVersion = 32
         buildToolsVersion = '30.0.3'
 
-        gradleVersion = '7.1.3'
+        gradleVersion = '7.2.0'
         kotlinVersion = '1.6.10'
         hiltPluginVersion = '2.40.5'
         composeVersion = '1.1.1'

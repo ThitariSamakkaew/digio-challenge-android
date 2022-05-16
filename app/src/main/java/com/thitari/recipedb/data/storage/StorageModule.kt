@@ -5,8 +5,6 @@ import androidx.room.Room
 import com.thitari.recipedb.data.storage.recipe.RecipeStorage
 import com.thitari.recipedb.data.storage.recipe.RecipeStorageImpl
 import com.thitari.recipedb.data.storage.recipe.RecipesDatabase
-import com.thitari.recipedb.data.storage.recipe.mapper.RecipeEntityListToRecipeListResultImpl
-import com.thitari.recipedb.data.storage.recipe.mapper.RecipeEntityListToRecipeListResultMapper
 import com.thitari.recipedb.data.storage.recipe.mapper.RecipeEntityToRecipeMapper
 import com.thitari.recipedb.data.storage.recipe.mapper.RecipeEntityToRecipeMapperImpl
 import com.thitari.recipedb.data.storage.recipe.mapper.RecipeToFavoriteRecipeEntityMapper
@@ -27,32 +25,26 @@ internal abstract class StorageModule {
 
     @Singleton
     @Binds
-    abstract fun bindRecipeEntityListToRecipeListResultMapper(
-        impl: RecipeEntityListToRecipeListResultImpl
-    ): RecipeEntityListToRecipeListResultMapper
-
-    @Singleton
-    @Binds
     abstract fun bindRecipeEntityToRecipeMapper(
-        impl: RecipeEntityToRecipeMapperImpl
+        impl: RecipeEntityToRecipeMapperImpl,
     ): RecipeEntityToRecipeMapper
 
     @Singleton
     @Binds
     abstract fun bindRecipeToRecipeEntityMapper(
-        impl: RecipeToRecipeEntityMapperImpl
+        impl: RecipeToRecipeEntityMapperImpl,
     ): RecipeToRecipeEntityMapper
 
     @Singleton
     @Binds
     abstract fun bindRecipeToFavoriteEntityMapper(
-        impl: RecipeToFavoriteRecipeEntityMapperImpl
+        impl: RecipeToFavoriteRecipeEntityMapperImpl,
     ): RecipeToFavoriteRecipeEntityMapper
 
     @Singleton
     @Binds
     abstract fun bindRecipeStorage(
-        impl: RecipeStorageImpl
+        impl: RecipeStorageImpl,
     ): RecipeStorage
 
     companion object {

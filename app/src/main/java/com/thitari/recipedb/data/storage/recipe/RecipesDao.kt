@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.thitari.recipedb.data.storage.recipe.entities.FavoriteRecipeEntity
 import com.thitari.recipedb.data.storage.recipe.entities.RecipeEntity
+import com.thitari.recipedb.data.storage.recipe.entities.RecipesTimestampEntity
 
 @Dao
 interface RecipesDao {
@@ -15,6 +16,14 @@ interface RecipesDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecipes(recipes: List<RecipeEntity>)
+
+    @Query("SELECT * FROM recipes_timestamp_table WHERE id = :id")
+    suspend fun getRecipesTimestamp(
+        id: Int = RecipesTimestampEntity.ID
+    ): RecipesTimestampEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertRecipesTimestamp(timestamp: RecipesTimestampEntity)
 
     @Query("SELECT * FROM favorite_recipe_table")
     suspend fun getFavoriteRecipes(): List<FavoriteRecipeEntity>
