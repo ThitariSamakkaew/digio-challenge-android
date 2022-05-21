@@ -3,7 +3,7 @@ package com.thitari.recipedb
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.thitari.ui.screen.recipe.RecipeListScreen
+import com.thitari.ui.screen.recipe.composable.RecipeListScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

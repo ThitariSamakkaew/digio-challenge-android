@@ -3,6 +3,7 @@ package com.thitari.ui.screen.recipe
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thitari.recipedb.data.model.Recipe
+import com.thitari.recipedb.data.model.RecipeSortOption
 import com.thitari.recipedb.data.repository.recipe.RecipeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.launch
@@ -53,18 +55,30 @@ class RecipeListViewModel @Inject constructor(
     val onTryAgainClick: () -> Unit = {
         fetchRecipes()
     }
+
     val onStart: () -> Unit = {
         fetchRecipes()
     }
+
     val onStop: () -> Unit = {
         jobs.forEach { job -> job.cancel() }
         jobs.clear()
+    }
+
+    val onClickSortButton: (RecipeSortOption) -> Unit = { sortOption ->
+        val newState = _state.value.copy(
+            sortOption = sortOption // NAME
+        )
+        _state.value = newState
+        fetchRecipes()
     }
 
     private fun fetchRecipes() {
         val job: Job = viewModelScope.launch {
             flow {
                 emit(recipesRepository.getOrRefreshRecipesByTime(REFRESH_TIME))
+            }.map { recipes: List<Recipe> ->
+                recipes.sort()
             }.combine(
                 flow {
                     emit(recipesRepository.getFavoriteRecipeIds())
@@ -103,6 +117,8 @@ class RecipeListViewModel @Inject constructor(
                     delay(REFRESH_TIME)
                     emit(recipesRepository.refreshRecipes())
                 }
+            }.map { recipes: List<Recipe> ->
+                recipes.sort()
             }.combine(
                 flow {
                     emit(recipesRepository.getFavoriteRecipeIds())
@@ -122,6 +138,14 @@ class RecipeListViewModel @Inject constructor(
                 }
         }
         jobs.add(job)
+    }
+
+    private fun List<Recipe>.sort(): List<Recipe> {
+        return when (_state.value.sortOption) {
+            RecipeSortOption.NAME -> this.sortedBy { recipe -> recipe.name }
+            RecipeSortOption.DIFFICULTY -> this.sortedBy { recipe -> recipe.difficulty }
+            RecipeSortOption.NONE -> this
+        }
     }
 
     companion object {

@@ -1,9 +1,6 @@
-package com.thitari.ui.screen.recipe
+package com.thitari.ui.screen.recipe.composable
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,29 +13,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.IconToggleButton
+import androidx.compose.material.IconButton
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -53,13 +50,19 @@ import androidx.lifecycle.LifecycleOwner
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.thitari.recipedb.data.model.Recipe
+import com.thitari.recipedb.data.model.RecipeSortOption
 import com.thitari.recipesdb.R
+import com.thitari.ui.screen.recipe.FavoriteButton
+import com.thitari.ui.screen.recipe.RecipeListError
+import com.thitari.ui.screen.recipe.RecipeListViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun RecipeListScreen(
     viewModel: RecipeListViewModel = hiltViewModel(),
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
 ) {
+
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
@@ -68,7 +71,6 @@ fun RecipeListScreen(
                 viewModel.onStop()
             }
         }
-
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
@@ -83,6 +85,8 @@ fun RecipeListScreen(
         )
         else -> RecipeListContent(
             recipes = state.recipes,
+            selectedSortOption = state.sortOption,
+            onSortOptionClick = viewModel.onClickSortButton,
             onAddToFavorite = viewModel.onAddToFavorite,
             onRemoveFromFavorite = viewModel.onRemoveFromFavorite,
             favoriteIds = state.favoriteIds
@@ -90,84 +94,57 @@ fun RecipeListScreen(
     }
 }
 
-@Composable
-fun RecipeListLoading() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-
-        Text(
-            text = stringResource(R.string.recipe_list_loading),
-            fontSize = 16.sp,
-            modifier = Modifier.padding(all = 10.dp)
-        )
-
-        CircularProgressIndicator(
-            modifier = Modifier
-                .width(36.dp)
-                .height(36.dp)
-        )
-    }
-}
-
-@Composable
-fun RecipeListError(
-    onTryAgainClick: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Image(
-            painterResource(R.drawable.ic_dissatisfied),
-            contentDescription = stringResource(R.string.recipe_list_error_message),
-            modifier = Modifier
-                .width(120.dp)
-                .height(120.dp)
-        )
-
-        Text(
-            text = stringResource(R.string.recipe_list_error_message),
-            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-        )
-
-        Button(
-            onClick = onTryAgainClick,
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Blue,
-                contentColor = Color.White
-            )
-        ) {
-            Text(text = stringResource(R.string.recipe_list_error_button))
-        }
-    }
-}
-
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun RecipeListContent(
     recipes: List<Recipe>,
+    selectedSortOption: RecipeSortOption,
+    onSortOptionClick: (RecipeSortOption) -> Unit,
     onAddToFavorite: (Recipe) -> Unit,
     onRemoveFromFavorite: (Recipe) -> Unit,
     favoriteIds: List<String>,
 ) {
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(horizontal = 8.dp)
+
+    val modalBottomSheetState =
+        rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+
+    val scope = rememberCoroutineScope()
+
+    Scaffold(
+        topBar = {
+            ToolBar(onclick = {
+                scope.launch {
+                    modalBottomSheetState.show()
+                }
+            })
+        }
     ) {
-        items(recipes) { recipe ->
-            RecipeItem(
-                recipe = recipe,
-                onAddToFavorite = onAddToFavorite,
-                onRemoveFromFavorite = onRemoveFromFavorite,
-                favoriteIds = favoriteIds
-            )
+
+        ModalBottomSheetLayout(
+            sheetState = modalBottomSheetState,
+            sheetContent = {
+                SortBottomSheetContent(
+                    selectedSortOption = selectedSortOption,   // set selected option here
+                    onSortButtonClick = onSortOptionClick, // set option click
+                    modalBottomSheetState = modalBottomSheetState,
+                    scope = scope
+                )
+            }
+        ) {
+
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp)
+            ) {
+                items(recipes) { recipe ->
+                    RecipeItem(
+                        recipe = recipe,
+                        onAddToFavorite = onAddToFavorite,
+                        onRemoveFromFavorite = onRemoveFromFavorite,
+                        favoriteIds = favoriteIds
+                    )
+                }
+            }
         }
     }
 }
@@ -179,13 +156,16 @@ fun RecipeItem(
     onRemoveFromFavorite: (Recipe) -> Unit,
     favoriteIds: List<String>,
 ) {
+
     Card(
         elevation = 4.dp,
         modifier = Modifier
             .fillMaxWidth()
             .height(220.dp)
     ) {
+
         Row {
+
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(recipe.thumb)
@@ -241,7 +221,7 @@ fun RecipeItem(
 
                 NutritionText(
                     nameRes = R.string.recipe_list_item_nutrition_difficulty,
-                    nutrition = recipe.fats,
+                    nutrition = recipe.difficulty.toString(),
                 )
 
                 Column(
@@ -251,6 +231,7 @@ fun RecipeItem(
                     verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.End,
                 ) {
+
                     FavoriteButton(
                         isChecked = favoriteIds.contains(recipe.id),
                         onChecked = { isChecked ->
@@ -272,6 +253,7 @@ fun NutritionText(
     @StringRes nameRes: Int,
     nutrition: String,
 ) {
+
     Row(modifier = Modifier.padding(top = 2.dp)) {
         Text(
             text = stringResource(id = nameRes),
@@ -289,48 +271,6 @@ fun NutritionText(
     }
 }
 
-@Composable
-fun FavoriteButton(
-    modifier: Modifier = Modifier,
-    isChecked: Boolean,
-    onChecked: (Boolean) -> Unit,
-) {
-    IconToggleButton(
-        modifier = modifier,
-        checked = isChecked,
-        onCheckedChange = onChecked
-    ) {
-        val transition = updateTransition(isChecked, label = "Checked indicator")
-
-        val tint by transition.animateColor(
-            label = "Tint"
-        ) { isChecked ->
-            if (isChecked) Color.Red else Color.Black
-        }
-        Icon(
-            imageVector = if (isChecked) {
-                Icons.Filled.Favorite
-            } else {
-                Icons.Filled.FavoriteBorder
-            },
-            contentDescription = null,
-            tint = tint
-        )
-    }
-}
-
-@Preview
-@Composable
-fun RecipeListErrorPreview() {
-    RecipeListError(onTryAgainClick = {})
-}
-
-@Preview
-@Composable
-fun RecipeListLoadingPreview() {
-    RecipeListLoading()
-}
-
 @Preview
 @Composable
 fun RecipeListPreview() {
@@ -338,11 +278,16 @@ fun RecipeListPreview() {
     for (i in 0..100) {
         recipes.add(recipe)
     }
+
     RecipeListContent(
         recipes = recipes,
         onAddToFavorite = {},
         onRemoveFromFavorite = {},
-        favoriteIds = emptyList())
+        favoriteIds = emptyList(),
+        selectedSortOption = RecipeSortOption.NONE,
+        onSortOptionClick = {}
+    )
+
 }
 
 @Preview
@@ -371,12 +316,19 @@ private val recipe = Recipe(
     time = "PT35M"
 )
 
-@Preview
 @Composable
-fun FavoriteButtonPreview() {
-    val (isChecked, setChecked) = remember { mutableStateOf(false) }
-    FavoriteButton(
-        isChecked = isChecked,
-        onChecked = { setChecked(!isChecked) }
+fun ToolBar(onclick: () -> Unit) {
+    TopAppBar(
+        title = {
+            Text(text = "Recipes")
+        },
+        backgroundColor = Color.Gray,
+        contentColor = Color.White,
+        actions = {
+            IconButton(onClick = onclick) {
+                Icon(Icons.Default.Menu,
+                    contentDescription = "Menu")
+            }
+        }
     )
 }
